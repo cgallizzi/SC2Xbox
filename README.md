@@ -14,11 +14,14 @@ then:
 
 1. Install the [ViGEmBus driver](https://github.com/nefarius/ViGEmBus/releases) once.
 2. **Close Steam** (it grabs the controller exclusively).
-3. Run `SC2Xbox.exe`. You'll get a tray icon to switch Xbox ⇄ DS4.
+3. Run `SC2Xbox.exe`. It runs **in the system tray — no window**. A notification
+   confirms it's running; the green Steam icon (check the hidden-icons **^** area)
+   lets you switch Xbox ⇄ DS4 or quit. There's nothing to keep open.
 4. Launch your game from Game Pass / wherever.
 
-No Python needed — the exe bundles everything. To run from source instead, see
-**Build from source** below.
+No Python needed — the exe bundles everything. If it ever fails to start, it
+shows a popup and writes `SC2Xbox.log` next to the exe. To run from source
+instead, see **Build from source** below.
 
 ## Why this is needed
 

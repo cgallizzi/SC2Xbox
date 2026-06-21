@@ -1,39 +1,83 @@
-"""PyInstaller / standalone entry point.
+"""SC2Xbox entry point.
 
-Runs as a module in dev (`python -m src.bridge`) and as a frozen single-file exe
-for distribution. When double-clicked from Explorer, the console closes the
-instant the process exits -- so on any error we print it and wait for a keypress,
-otherwise a startup failure would just "flash and disappear".
+Runs as a module in dev (`python -m src.bridge`, with a console) and as a frozen
+**windowed** exe for distribution (no console window -- it lives in the system
+tray). In windowed mode there's no console, so:
+  - stdout/stderr are redirected to a logfile next to the exe (prints would
+    otherwise crash, since PyInstaller sets them to None), and
+  - a startup failure shows a popup with the error instead of silently vanishing.
 """
 
+import os
 import sys
+import tempfile
 import traceback
 
-# Frozen console apps block-buffer stdout; make status lines appear immediately.
-try:
-    sys.stdout.reconfigure(line_buffering=True)
-    sys.stderr.reconfigure(line_buffering=True)
-except Exception:
-    pass
+
+def _setup_output():
+    """Make output safe in windowed mode. Returns the log path, or None."""
+    has_console = sys.stdout is not None
+    if getattr(sys, "frozen", False) and not has_console:
+        # No console: route all output to a logfile so print() works and the
+        # user has something to send us if anything goes wrong.
+        for directory in (os.path.dirname(sys.executable), tempfile.gettempdir()):
+            try:
+                path = os.path.join(directory, "SC2Xbox.log")
+                f = open(path, "w", encoding="utf-8", buffering=1)
+                sys.stdout = f
+                sys.stderr = f
+                return path
+            except Exception:
+                continue
+        # Couldn't open a log; swallow output so prints don't crash.
+        import io
+        sys.stdout = sys.stderr = io.StringIO()
+        return None
+    # Console present (dev / run.bat): just make status appear immediately.
+    try:
+        sys.stdout.reconfigure(line_buffering=True)
+        sys.stderr.reconfigure(line_buffering=True)
+    except Exception:
+        pass
+    return None
 
 
-def _run():
-    from src.bridge import main
-    return main()
+def _popup(title, text):
+    try:
+        import ctypes
+        ctypes.windll.user32.MessageBoxW(0, text, title, 0x10)  # MB_ICONERROR
+    except Exception:
+        pass
+
+
+def _log_tail(path, limit=1500):
+    try:
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+            return f.read()[-limit:].strip()
+    except Exception:
+        return ""
 
 
 if __name__ == "__main__":
+    log_path = _setup_output()
     try:
-        code = _run()
+        from src.bridge import main
+        code = main()
     except Exception:
         traceback.print_exc()
         code = 1
 
-    # If launched by double-click and something went wrong, keep the window open
-    # so the user can actually read the error.
     if code != 0:
-        try:
-            input("\nSomething went wrong (see above). Press Enter to close...")
-        except EOFError:
-            pass
+        # Windowed build: no console to read, so surface the error in a popup.
+        if getattr(sys, "frozen", False) and log_path:
+            detail = _log_tail(log_path)
+            msg = "SC2Xbox couldn't start.\n\n"
+            msg += (detail or "Unknown error.")
+            msg += f"\n\nFull log: {log_path}"
+            _popup("SC2Xbox", msg)
+        else:
+            try:
+                input("\nSomething went wrong (see above). Press Enter to close...")
+            except EOFError:
+                pass
     sys.exit(code)

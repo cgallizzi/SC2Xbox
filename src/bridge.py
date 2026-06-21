@@ -180,17 +180,33 @@ def _start_tray(bridge):
         icon.stop()
 
     menu = pystray.Menu(
+        pystray.MenuItem(lambda item: f"SC2Xbox — emulating {bridge.mode.upper()}",
+                         None, enabled=False),
+        pystray.Menu.SEPARATOR,
         pystray.MenuItem("Emulate: Xbox 360", set_xbox, checked=is_xbox, radio=True),
         pystray.MenuItem("Emulate: DualShock 4", set_ds4, checked=is_ds4, radio=True),
         pystray.Menu.SEPARATOR,
         pystray.MenuItem("Quit", on_quit),
     )
     icon = pystray.Icon("SteamCtrlBridge", icon_image(),
-                        "Steam Controller Bridge", menu)
-    t = threading.Thread(target=icon.run, daemon=True)
+                        "SC2Xbox — Steam Controller Bridge", menu)
+
+    def on_ready(icon):
+        # Runs once the tray icon is actually visible.
+        icon.visible = True
+        try:
+            icon.notify(
+                "Running in the system tray. There's no window to keep open — "
+                "right-click the green Steam icon to switch Xbox/DS4 or quit.",
+                "SC2Xbox is running",
+            )
+        except Exception:
+            pass
+
+    t = threading.Thread(target=lambda: icon.run(setup=on_ready), daemon=True)
     t.start()
-    print("Tray icon active (look in the system tray / hidden-icons area "
-          "to switch Xbox/DS4 or quit).")
+    print("Tray icon active (system tray / hidden-icons '^' area). "
+          "No window needed - quit from the tray icon.")
     return icon
 
 

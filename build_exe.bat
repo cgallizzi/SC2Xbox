@@ -21,7 +21,7 @@ echo  - bundling SDL3.dll (so users don't need PySDL3 to download it)
 echo  - bundling vgamepad / ViGEm client
 echo.
 
-pyinstaller --noconfirm --onefile --name SC2Xbox ^
+pyinstaller --noconfirm --onefile --windowed --name SC2Xbox ^
   --icon icon.ico ^
   --add-data "config.default.json;." ^
   --collect-all sdl3 ^

@@ -34,7 +34,7 @@ jobs:
 
       - name: Build exe
         run: >
-          pyinstaller --noconfirm --onefile --name SC2Xbox
+          pyinstaller --noconfirm --onefile --windowed --name SC2Xbox
           --icon icon.ico
           --add-data "config.default.json;."
           --collect-all sdl3
