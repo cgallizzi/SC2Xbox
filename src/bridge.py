@@ -170,6 +170,8 @@ def _start_tray(bridge):
                         "Steam Controller Bridge", menu)
     t = threading.Thread(target=icon.run, daemon=True)
     t.start()
+    print("Tray icon active (look in the system tray / hidden-icons area "
+          "to switch Xbox/DS4 or quit).")
     return icon
 
 
