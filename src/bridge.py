@@ -137,12 +137,31 @@ def _start_tray(bridge):
         return None
 
     def icon_image():
-        img = Image.new("RGB", (64, 64), (24, 26, 32))
+        # A Steam logo (mechanical piston) rendered in Xbox green -- the running
+        # joke of "Steam Controller, but for Xbox". Drawn at 4x then downscaled
+        # so the curves come out smooth in the tray.
+        S = 4
+        sz = 64 * S
+        img = Image.new("RGBA", (sz, sz), (0, 0, 0, 0))
         d = ImageDraw.Draw(img)
-        d.rounded_rectangle([8, 20, 56, 48], radius=12, fill=(46, 160, 255))
-        d.ellipse([16, 28, 26, 38], fill=(255, 255, 255))
-        d.ellipse([38, 28, 48, 38], fill=(255, 255, 255))
-        return img
+        green = (16, 124, 16, 255)   # Xbox green (#107C10)
+        white = (255, 255, 255, 255)
+
+        def box(x0, y0, x1, y1):
+            return [x0 * S, y0 * S, x1 * S, y1 * S]
+
+        # Green coin background.
+        d.ellipse(box(1, 1, 63, 63), fill=green)
+        # Connecting rod from the big wheel to the small piston.
+        d.line([(24 * S, 24 * S), (47 * S, 47 * S)], fill=white, width=6 * S)
+        # Big wheel (ring) upper-left: white disc with a green hole.
+        d.ellipse(box(8, 8, 36, 36), fill=white)
+        d.ellipse(box(15, 15, 29, 29), fill=green)
+        # Small piston lower-right: white disc with a small green hole.
+        d.ellipse(box(40, 40, 56, 56), fill=white)
+        d.ellipse(box(45, 45, 51, 51), fill=green)
+
+        return img.resize((64, 64), Image.LANCZOS)
 
     def set_xbox(icon, item):
         bridge.request_mode("xbox")

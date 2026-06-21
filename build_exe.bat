@@ -22,6 +22,7 @@ echo  - bundling vgamepad / ViGEm client
 echo.
 
 pyinstaller --noconfirm --onefile --name SC2Xbox ^
+  --icon icon.ico ^
   --add-data "config.default.json;." ^
   --collect-all sdl3 ^
   --collect-all vgamepad ^
