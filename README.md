@@ -1,4 +1,8 @@
-# SC2Xbox — Steam Controller Bridge
+<p align="center">
+  <img src="logo.png" alt="SC2Xbox" width="160">
+</p>
+
+<h1 align="center">SC2Xbox — Steam Controller Bridge</h1>
 
 Use the **2025 Steam Controller** in apps that only accept standard gamepads —
 **Xbox PC app / PC Game Pass** (Forza, etc.), Epic, GOG, EA, Ubisoft, emulators,

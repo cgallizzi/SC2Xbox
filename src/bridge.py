@@ -13,12 +13,21 @@ Xbox/DS4 pad that Windows -- and clients like Game Pass -- accept.
 """
 
 import argparse
+import os
 import sys
 import threading
 import time
 
 from . import config
 from .input_sdl3 import SDL3Input, ControllerNotFound, list_gamepads
+
+
+def _resource(name):
+    """Path to a bundled data file, both as a PyInstaller exe and from source."""
+    base = getattr(sys, "_MEIPASS", None)
+    if base:
+        return os.path.join(base, name)
+    return os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), name)
 
 
 def cmd_list():
@@ -136,32 +145,33 @@ def _start_tray(bridge):
               f"Use --mode to choose output, Ctrl+C to quit.")
         return None
 
-    def icon_image():
-        # A Steam logo (mechanical piston) rendered in Xbox green -- the running
-        # joke of "Steam Controller, but for Xbox". Drawn at 4x then downscaled
-        # so the curves come out smooth in the tray.
+    def _drawn_icon():
+        # Fallback Steam-piston logo in Xbox green, if logo.png isn't found.
         S = 4
         sz = 64 * S
         img = Image.new("RGBA", (sz, sz), (0, 0, 0, 0))
         d = ImageDraw.Draw(img)
-        green = (16, 124, 16, 255)   # Xbox green (#107C10)
+        green = (16, 124, 16, 255)
         white = (255, 255, 255, 255)
 
         def box(x0, y0, x1, y1):
             return [x0 * S, y0 * S, x1 * S, y1 * S]
 
-        # Green coin background.
         d.ellipse(box(1, 1, 63, 63), fill=green)
-        # Connecting rod from the big wheel to the small piston.
         d.line([(24 * S, 24 * S), (47 * S, 47 * S)], fill=white, width=6 * S)
-        # Big wheel (ring) upper-left: white disc with a green hole.
         d.ellipse(box(8, 8, 36, 36), fill=white)
         d.ellipse(box(15, 15, 29, 29), fill=green)
-        # Small piston lower-right: white disc with a small green hole.
         d.ellipse(box(40, 40, 56, 56), fill=white)
         d.ellipse(box(45, 45, 51, 51), fill=green)
-
         return img.resize((64, 64), Image.LANCZOS)
+
+    def icon_image():
+        # Use the real green Steam logo (bundled logo.png); fall back to the
+        # drawn version if it can't be loaded.
+        try:
+            return Image.open(_resource("logo.png")).convert("RGBA")
+        except Exception:
+            return _drawn_icon()
 
     def set_xbox(icon, item):
         bridge.request_mode("xbox")
