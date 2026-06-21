@@ -1,0 +1,31 @@
+{
+  "comment": "Steam Controller Bridge config. With the SDL 3 backend, standard buttons/sticks/triggers/d-pad and the trackpad (as right stick) map themselves -- no index tuning needed. Copy this to config.json to customize.",
+
+  "device": {
+    "comment": "Pick which controller to use if several are present. name_contains is matched case-insensitively against the controller name; first match wins. Leave as 'steam' for the Steam Controller.",
+    "name_contains": "steam"
+  },
+
+  "output": {
+    "comment": "Emulated pad on startup: 'xbox' or 'ds4'. Switchable at runtime from the tray.",
+    "mode": "xbox"
+  },
+
+  "gyro": {
+    "comment": "Gyro aiming (off by default). destination: 'right_stick' or 'mouse'. activation: 'always', 'hold' (only while activation_button held -- a 'gyro ratchet'), or 'off'. activation_button is a LOGICAL button name: A B X Y LB RB BACK START GUIDE LS RS DUP DDOWN DLEFT DRIGHT.",
+    "enabled": false,
+    "destination": "right_stick",
+    "activation": "hold",
+    "activation_button": "LB",
+    "sensitivity": 0.5,
+    "mouse_sensitivity": 800.0,
+    "invert_pitch": false,
+    "deadzone": 0.02
+  },
+
+  "tuning": {
+    "comment": "stick_deadzone (0..1) stops drift; poll_hz is the update rate.",
+    "stick_deadzone": 0.08,
+    "poll_hz": 250
+  }
+}

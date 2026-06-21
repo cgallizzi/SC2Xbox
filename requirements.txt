@@ -1,0 +1,13 @@
+# Input: SDL 3 (via PySDL3). REQUIRED for the 2025 Steam Controller -- SDL 3's
+# HIDAPI Steam driver disables "lizard mode" and exposes the device as a real
+# gamepad with a standard mapping + gyro. SDL 2 (pygame) cannot see this device.
+# PySDL3 downloads its SDL3 binaries on first import.
+PySDL3>=0.9.0
+
+# Output: vgamepad wraps the ViGEmBus driver and can emulate BOTH an Xbox 360
+# (XInput) pad and a DualShock 4 pad. Installs the ViGEmBus driver on first use.
+vgamepad>=0.1.0
+
+# Tray UI for switching Xbox <-> DS4 at runtime.
+pystray>=0.19.0
+Pillow>=10.0.0

@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# PyInstaller build output (the exe is built by CI / build_exe.bat, not committed)
+build/
+dist/
+*.spec
+
+# User's personal mapping (ship config.default.json, not the override)
+config.json
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
