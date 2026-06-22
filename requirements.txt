@@ -1,4 +1,4 @@
-# Input: SDL 3 (via PySDL3). REQUIRED for the 2025 Steam Controller -- SDL 3's
+# Input: SDL 3 (via PySDL3). REQUIRED for the 2026 Steam Controller -- SDL 3's
 # HIDAPI Steam driver disables "lizard mode" and exposes the device as a real
 # gamepad with a standard mapping + gyro. SDL 2 (pygame) cannot see this device.
 # PySDL3 downloads its SDL3 binaries on first import.

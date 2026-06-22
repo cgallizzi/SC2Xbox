@@ -1,6 +1,6 @@
-"""Read the 2025 Steam Controller via SDL 3 and fill a GamepadState.
+"""Read the 2026 Steam Controller via SDL 3 and fill a GamepadState.
 
-Why SDL 3 (not pygame/SDL 2): the 2025 Steam Controller (USB PID 0x1304) ships
+Why SDL 3 (not pygame/SDL 2): the 2026 Steam Controller (USB PID 0x1304) ships
 in "lizard mode" -- it presents as a mouse + keyboard and never announces itself
 as a joystick. SDL 2 has no driver for it, so pygame sees nothing. SDL 3's
 HIDAPI Steam driver knows this device: enabling it disables lizard mode and

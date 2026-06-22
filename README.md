@@ -45,7 +45,7 @@ Steam Controller   →  SDL 3   →  bridge  →  ViGEmBus       →  Windows se
                       real gamepad                       Game Pass / any client
 ```
 
-**SDL 3 is the key piece.** Its HIDAPI Steam driver recognizes the 2025
+**SDL 3 is the key piece.** Its HIDAPI Steam driver recognizes the 2026
 controller, disables lizard mode, and exposes a proper gamepad with a standard
 button/stick/trigger mapping plus gyro. (SDL 2 / pygame can't see this device at
 all — that's a dead end for the new controller.) The bridge then mirrors that
@@ -171,7 +171,7 @@ steam-controller-bridge/
 
 ## Status / roadmap
 
-- [x] SDL 3 input — detects the 2025 controller, disables lizard mode
+- [x] SDL 3 input — detects the 2026 controller, disables lizard mode
 - [x] Emulate Xbox 360 & DS4, runtime switching, tray UI
 - [x] Verified end-to-end on real hardware: controller → virtual Xbox pad in Windows
 - [x] Gyro aiming → right stick / mouse, hold-to-aim ratchet

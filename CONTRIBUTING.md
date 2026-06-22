@@ -1,6 +1,6 @@
 # Contributing to SC2Xbox
 
-Thanks for helping make the 2025 Steam Controller work everywhere!
+Thanks for helping make the 2026 Steam Controller work everywhere!
 
 ## Dev setup
 
