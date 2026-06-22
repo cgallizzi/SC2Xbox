@@ -132,6 +132,14 @@ class SDL3Input:
         n = sdl3.SDL_GetGamepadName(self.gp)
         return n.decode(errors="ignore") if n else "Steam Controller"
 
+    def update_config(self, cfg):
+        """Apply a freshly-loaded config live (called on config.json change)."""
+        self.cfg = cfg
+        self.remap = {k: v for k, v in (cfg.get("remap") or {}).items()
+                      if not (k.startswith("comment") or k.startswith("_"))}
+        # Re-evaluate gyro enable/sensor state.
+        self._gyro_ready = self._enable_gyro_if_wanted()
+
     # --- gyro -------------------------------------------------------------
     def _enable_gyro_if_wanted(self):
         gcfg = self.cfg.get("gyro", {})

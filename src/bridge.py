@@ -82,8 +82,38 @@ class Bridge:
         self._lock = threading.Lock()
         self._pending_mode = None
         self.running = True
+        self._cfg_mtime = self._cfg_stamp()
+        self._cfg_check_at = 0.0
         extras = " + mouse" if self.mouse else ""
         print(f"Bridge active: {self.inp.name()}  ->  virtual {mode.upper()} pad{extras}")
+
+    @staticmethod
+    def _cfg_stamp():
+        try:
+            return os.path.getmtime(config.USER_PATH)
+        except OSError:
+            return 0.0
+
+    def _maybe_reload_config(self):
+        """Hot-reload config.json when the GUI saves it (checked ~1/sec)."""
+        now = time.monotonic()
+        if now < self._cfg_check_at:
+            return
+        self._cfg_check_at = now + 1.0
+        m = self._cfg_stamp()
+        if m == self._cfg_mtime:
+            return
+        self._cfg_mtime = m
+        try:
+            newcfg = config.load()
+            self.cfg = newcfg
+            self.inp.update_config(newcfg)
+            newmode = newcfg.get("output", {}).get("mode", self.mode)
+            if newmode != self.mode:
+                self.request_mode(newmode)
+            print("[config] reloaded from config.json (live)")
+        except Exception as e:
+            print(f"[config] reload failed: {e}")
 
     @staticmethod
     def _mouse_enabled(cfg):
@@ -118,6 +148,7 @@ class Bridge:
         try:
             while self.running:
                 self._maybe_switch()
+                self._maybe_reload_config()
                 state = self.inp.poll()
                 self.out.apply(state)
                 if self.mouse:
@@ -192,13 +223,38 @@ def _start_tray(bridge):
         bridge.running = False
         icon.stop()
 
+    def open_settings(icon, item):
+        # Launch the GUI as a SEPARATE process so it's independent of the bridge.
+        import subprocess
+        try:
+            if getattr(sys, "frozen", False):
+                cmd = [sys.executable, "--gui"]
+            else:
+                cmd = [sys.executable, "-m", "src.bridge", "--gui"]
+            subprocess.Popen(cmd, close_fds=True)
+        except Exception as e:
+            print(f"[warn] couldn't open settings window: {e}")
+
+    def toggle_startup(icon, item):
+        from . import startup
+        startup.set_enabled(not startup.is_enabled())
+
+    def startup_checked(item):
+        from . import startup
+        return startup.is_enabled()
+
     menu = pystray.Menu(
         pystray.MenuItem(lambda item: f"SC2Xbox — emulating {bridge.mode.upper()}",
                          None, enabled=False),
         pystray.Menu.SEPARATOR,
+        pystray.MenuItem("Remap buttons / Settings…", open_settings,
+                         default=True),
+        pystray.Menu.SEPARATOR,
         pystray.MenuItem("Emulate: Xbox 360", set_xbox, checked=is_xbox, radio=True),
         pystray.MenuItem("Emulate: DualShock 4", set_ds4, checked=is_ds4, radio=True),
         pystray.Menu.SEPARATOR,
+        pystray.MenuItem("Start with Windows", toggle_startup,
+                         checked=startup_checked),
         pystray.MenuItem("Quit", on_quit),
     )
     icon = pystray.Icon("SteamCtrlBridge", icon_image(),
@@ -232,7 +288,14 @@ def main(argv=None):
     p.add_argument("--mode", choices=["xbox", "ds4"], default=None,
                    help="output pad type (overrides config)")
     p.add_argument("--no-tray", action="store_true", help="run without tray icon")
+    p.add_argument("--gui", action="store_true",
+                   help="open the settings/remapping window (separate process)")
     args = p.parse_args(argv)
+
+    if args.gui:
+        from .gui import run_gui
+        run_gui()
+        return 0
 
     if args.list:
         cmd_list()

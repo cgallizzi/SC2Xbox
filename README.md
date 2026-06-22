@@ -95,10 +95,20 @@ If a game still fights between two controllers (sees both the virtual pad *and*
 the physical device), the fix is **HidHide** to cloak the physical controller —
 ask and I'll wire it in.
 
-## Button remapping
+## Settings window (GUI)
 
-Each output button can be driven by any **physical** button — including the
-Steam Controller's **grip / back paddle buttons**. Edit the `remap` block in
+Right-click the tray icon → **Remap buttons / Settings…** to open the settings
+window: remap any button with dropdowns (incl. grip/paddle sources), switch
+**Xbox 360 / DualShock 4**, and toggle **Start SC2Xbox with Windows**. Hit
+**Save & Apply** and it takes effect **live** — no restart. The window runs as
+its own process, so **closing it never stops the bridge**. Open it directly with
+`SC2Xbox.exe --gui`. (`Start with Windows` is also a one-click tray toggle.)
+
+## Button remapping (config file)
+
+Prefer editing by hand? Each output button can be driven by any **physical**
+button — including the Steam Controller's **grip / back paddle buttons**. Edit
+the `remap` block in
 `config.json` (copy `config.default.json` first). Each entry is
 `"OUTPUT": "PHYSICAL_SOURCE"`, identity by default:
 
@@ -167,6 +177,8 @@ steam-controller-bridge/
     output_mouse.py            normalized state -> real mouse cursor (gyro->mouse)
     state.py                   the normalized GamepadState shared across the bridge
     config.py                  load/save config
+    gui.py                     settings/remap window (separate process)
+    startup.py                 'Start with Windows' registry helper
 ```
 
 ## Status / roadmap
@@ -175,6 +187,8 @@ steam-controller-bridge/
 - [x] Emulate Xbox 360 & DS4, runtime switching, tray UI
 - [x] Verified end-to-end on real hardware: controller → virtual Xbox pad in Windows
 - [x] Gyro aiming → right stick / mouse, hold-to-aim ratchet
+- [x] Button remapping (incl. grip/paddle buttons), live-reload
+- [x] Settings GUI + "Start with Windows", independent of the bridge
 - [ ] Trackpad → mouse (currently the pad maps to the right stick via SDL)
 - [ ] Optional HidHide integration to cloak the physical device from games
 - [ ] Per-game profiles

@@ -25,6 +25,7 @@ pyinstaller --noconfirm --onefile --windowed --name SC2Xbox ^
   --icon icon.ico ^
   --add-data "config.default.json;." ^
   --add-data "logo.png;." ^
+  --add-data "icon.ico;." ^
   --collect-all sdl3 ^
   --collect-all vgamepad ^
   --hidden-import pystray._win32 ^
