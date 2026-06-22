@@ -95,6 +95,32 @@ If a game still fights between two controllers (sees both the virtual pad *and*
 the physical device), the fix is **HidHide** to cloak the physical controller —
 ask and I'll wire it in.
 
+## Button remapping
+
+Each output button can be driven by any **physical** button — including the
+Steam Controller's **grip / back paddle buttons**. Edit the `remap` block in
+`config.json` (copy `config.default.json` first). Each entry is
+`"OUTPUT": "PHYSICAL_SOURCE"`, identity by default:
+
+```json
+"remap": {
+  "A": "RPADDLE1",   // right grip button now acts as A
+  "B": "B",
+  "X": "LPADDLE1",   // left grip button acts as X
+  "GUIDE": "NONE"    // disable the Guide button
+}
+```
+
+- **Physical sources:** `A B X Y LB RB BACK START GUIDE LS RS DUP DDOWN DLEFT
+  DRIGHT`, plus the extras `MISC1 MISC2 LPADDLE1 RPADDLE1 LPADDLE2 RPADDLE2`.
+- `"NONE"` disables an output; two outputs may share one source.
+- **Don't know which paddle is which?** Run the probe to see the live names:
+  - From source: `run.bat --probe`
+  - From the exe (a console pops up): `SC2Xbox.exe --probe`
+
+  Press each grip/back button and note the name it lights up, then use that name
+  in the remap. Typos are flagged at startup.
+
 ## Gyro aiming
 
 Off by default. Enable it in `config.json` (copy `config.default.json` first):
@@ -104,15 +130,16 @@ Off by default. Enable it in `config.json` (copy `config.default.json` first):
   "enabled": true,
   "destination": "right_stick",   // or "mouse"
   "activation": "hold",            // "always", "hold", or "off"
-  "activation_button": "LB",       // logical button to hold for "gyro ratchet"
+  "activation_button": "RPADDLE1", // physical button to hold for "gyro ratchet"
   "sensitivity": 0.5,
   "invert_pitch": false
 }
 ```
 
 `"hold"` is the classic **gyro ratchet** — aim only steers while you hold the
-chosen button, so the controller can rest without drifting. Button names:
-`A B X Y LB RB BACK START GUIDE LS RS DUP DDOWN DLEFT DRIGHT`.
+chosen button, so the controller can rest without drifting. The button is a
+**physical** one, so a grip paddle (e.g. `RPADDLE1`) is ideal — it can trigger
+gyro without being mapped to any in-game button.
 
 ## Config
 
@@ -121,6 +148,7 @@ the right stick)** are handled automatically — no per-unit index tuning. The o
 things you'd normally touch in `config.json`:
 
 - `output.mode` — `xbox` or `ds4` startup default
+- `remap` — reassign buttons (incl. grip/paddles), as above
 - `gyro` — as above
 - `tuning.stick_deadzone` — raise if you get stick drift
 
@@ -134,6 +162,7 @@ steam-controller-bridge/
   src/
     bridge.py                  main loop, CLI, tray, runtime Xbox/DS4 switch
     input_sdl3.py              SDL 3 read (disables lizard mode) -> normalized state
+    remap.py                   physical buttons -> output buttons (incl. paddles)
     output_vgamepad.py         normalized state -> virtual Xbox360 / DS4 (ViGEm)
     output_mouse.py            normalized state -> real mouse cursor (gyro->mouse)
     state.py                   the normalized GamepadState shared across the bridge

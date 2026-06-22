@@ -43,18 +43,21 @@ def cmd_list():
 
 
 def cmd_probe(cfg):
-    """Continuously print live input so you can confirm the mapping."""
+    """Continuously print live PHYSICAL input so you can build a remap."""
     inp = SDL3Input(cfg)
     print(f"Probing: {inp.name()}")
-    print("\nMove sticks/triggers and press buttons. Watch the values change.")
+    print(f"Physical buttons on this controller: {', '.join(inp.available)}")
+    print("\nPress each button to learn its name (esp. the grip/paddle buttons),")
+    print("then use those names in the \"remap\" section of config.json.")
     print("Ctrl+C to stop.\n")
     try:
         while True:
-            s = inp.poll()
-            pressed = [b for b, v in s.buttons.items() if v]
+            inp.poll()
+            pressed = [b for b, v in inp.physical.items() if v]
+            s = inp.state
             line = (f"L({s.lx:+.2f},{s.ly:+.2f}) R({s.rx:+.2f},{s.ry:+.2f}) "
-                    f"LT={s.lt:.2f} RT={s.rt:.2f} btns={pressed}")
-            sys.stdout.write("\r" + line.ljust(110))
+                    f"LT={s.lt:.2f} RT={s.rt:.2f} pressed={pressed}")
+            sys.stdout.write("\r" + line.ljust(115))
             sys.stdout.flush()
             time.sleep(0.05)
     except KeyboardInterrupt:
@@ -240,6 +243,11 @@ def main(argv=None):
     if args.probe:
         cmd_probe(cfg)
         return 0
+
+    # Warn (don't fail) on a typo'd remap so the user can fix config.json.
+    from .remap import validate
+    for problem in validate(cfg.get("remap")):
+        print(f"[warn] remap: {problem}")
 
     mode = args.mode or cfg["output"].get("mode", "xbox")
 

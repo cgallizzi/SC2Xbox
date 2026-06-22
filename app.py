@@ -14,9 +14,28 @@ import tempfile
 import traceback
 
 
+def _wants_console():
+    """Diagnostic flags need a visible console even in the windowed exe."""
+    return any(a in ("--probe", "--list") for a in sys.argv[1:])
+
+
 def _setup_output():
     """Make output safe in windowed mode. Returns the log path, or None."""
     has_console = sys.stdout is not None
+
+    # Windowed exe + a diagnostic flag: allocate a real console so the live
+    # readout is visible (used to discover button names for remapping).
+    if getattr(sys, "frozen", False) and not has_console and _wants_console():
+        try:
+            import ctypes
+            ctypes.windll.kernel32.AllocConsole()
+            sys.stdout = open("CONOUT$", "w", encoding="utf-8", buffering=1)
+            sys.stderr = sys.stdout
+            sys.stdin = open("CONIN$", "r")
+            return None
+        except Exception:
+            pass
+
     if getattr(sys, "frozen", False) and not has_console:
         # No console: route all output to a logfile so print() works and the
         # user has something to send us if anything goes wrong.

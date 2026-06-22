@@ -11,8 +11,27 @@
     "mode": "xbox"
   },
 
+  "remap": {
+    "comment": "Button remapping. Each entry is OUTPUT button (left) <- PHYSICAL source (right). Default is identity (A<-A etc). Set a source to \"NONE\" to disable an output. Two outputs may share one source. Run `run.bat --probe` to see which physical buttons your controller has and what they're called. PHYSICAL sources: A B X Y LB RB BACK START GUIDE LS RS DUP DDOWN DLEFT DRIGHT, plus Steam Controller extras MISC1 MISC2 LPADDLE1 RPADDLE1 LPADDLE2 RPADDLE2 (grip/back buttons). Example: \"A\": \"RPADDLE1\" makes the right grip button act as A.",
+    "A": "A",
+    "B": "B",
+    "X": "X",
+    "Y": "Y",
+    "LB": "LB",
+    "RB": "RB",
+    "BACK": "BACK",
+    "START": "START",
+    "GUIDE": "GUIDE",
+    "LS": "LS",
+    "RS": "RS",
+    "DUP": "DUP",
+    "DDOWN": "DDOWN",
+    "DLEFT": "DLEFT",
+    "DRIGHT": "DRIGHT"
+  },
+
   "gyro": {
-    "comment": "Gyro aiming (off by default). destination: 'right_stick' or 'mouse'. activation: 'always', 'hold' (only while activation_button held -- a 'gyro ratchet'), or 'off'. activation_button is a LOGICAL button name: A B X Y LB RB BACK START GUIDE LS RS DUP DDOWN DLEFT DRIGHT.",
+    "comment": "Gyro aiming (off by default). destination: 'right_stick' or 'mouse'. activation: 'always', 'hold' (only while activation_button held -- a 'gyro ratchet'), or 'off'. activation_button is a PHYSICAL button name (so you can use a grip paddle): A B X Y LB RB BACK START GUIDE LS RS DUP DDOWN DLEFT DRIGHT MISC1 MISC2 LPADDLE1 RPADDLE1 LPADDLE2 RPADDLE2.",
     "enabled": false,
     "destination": "right_stick",
     "activation": "hold",

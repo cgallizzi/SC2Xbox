@@ -17,32 +17,36 @@ import time
 import sdl3
 
 from .state import GamepadState
+from .remap import apply_remap
 
 
 class ControllerNotFound(Exception):
     pass
 
 
-# SDL gamepad button -> our logical button name.
-def _button_map():
-    B = sdl3
-    return {
-        "A": B.SDL_GAMEPAD_BUTTON_SOUTH,
-        "B": B.SDL_GAMEPAD_BUTTON_EAST,
-        "X": B.SDL_GAMEPAD_BUTTON_WEST,
-        "Y": B.SDL_GAMEPAD_BUTTON_NORTH,
-        "LB": B.SDL_GAMEPAD_BUTTON_LEFT_SHOULDER,
-        "RB": B.SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER,
-        "BACK": B.SDL_GAMEPAD_BUTTON_BACK,
-        "START": B.SDL_GAMEPAD_BUTTON_START,
-        "GUIDE": B.SDL_GAMEPAD_BUTTON_GUIDE,
-        "LS": B.SDL_GAMEPAD_BUTTON_LEFT_STICK,
-        "RS": B.SDL_GAMEPAD_BUTTON_RIGHT_STICK,
-        "DUP": B.SDL_GAMEPAD_BUTTON_DPAD_UP,
-        "DDOWN": B.SDL_GAMEPAD_BUTTON_DPAD_DOWN,
-        "DLEFT": B.SDL_GAMEPAD_BUTTON_DPAD_LEFT,
-        "DRIGHT": B.SDL_GAMEPAD_BUTTON_DPAD_RIGHT,
-    }
+# Physical button name -> SDL gamepad button constant name. Includes the Steam
+# Controller's extras (grip/back paddles, misc) as remap sources.
+_PHYS_SDL = (
+    ("A", "SOUTH"), ("B", "EAST"), ("X", "WEST"), ("Y", "NORTH"),
+    ("LB", "LEFT_SHOULDER"), ("RB", "RIGHT_SHOULDER"),
+    ("BACK", "BACK"), ("START", "START"), ("GUIDE", "GUIDE"),
+    ("LS", "LEFT_STICK"), ("RS", "RIGHT_STICK"),
+    ("DUP", "DPAD_UP"), ("DDOWN", "DPAD_DOWN"),
+    ("DLEFT", "DPAD_LEFT"), ("DRIGHT", "DPAD_RIGHT"),
+    ("MISC1", "MISC1"), ("MISC2", "MISC2"),
+    ("LPADDLE1", "LEFT_PADDLE1"), ("RPADDLE1", "RIGHT_PADDLE1"),
+    ("LPADDLE2", "LEFT_PADDLE2"), ("RPADDLE2", "RIGHT_PADDLE2"),
+)
+
+
+def _phys_button_map():
+    """name -> SDL constant, for buttons this SDL build knows about."""
+    m = {}
+    for name, sdlname in _PHYS_SDL:
+        c = getattr(sdl3, "SDL_GAMEPAD_BUTTON_" + sdlname, None)
+        if c is not None:
+            m[name] = c
+    return m
 
 
 def _deadzone(v, dz):
@@ -85,7 +89,14 @@ class SDL3Input:
         time.sleep(0.4)  # give SDL a moment to enumerate the HIDAPI device
         sdl3.SDL_UpdateGamepads()
         self.gp = self._open()
-        self.btn_map = _button_map()
+        self.phys_map = _phys_button_map()
+        # Strip comment/meta keys from the remap config up front.
+        self.remap = {k: v for k, v in (cfg.get("remap") or {}).items()
+                      if not (k.startswith("comment") or k.startswith("_"))}
+        # Physical buttons this specific controller actually reports (for probe).
+        self.available = [n for n, c in self.phys_map.items()
+                          if sdl3.SDL_GamepadHasButton(self.gp, c)]
+        self.physical = {n: False for n in self.phys_map}
         self.state = GamepadState()
         self._last_poll = time.perf_counter()
         self._gyro_ready = self._enable_gyro_if_wanted()
@@ -153,7 +164,9 @@ class SDL3Input:
             return
         if mode == "hold":
             hold = gcfg.get("activation_button", "")
-            if hold and not s.buttons.get(hold):
+            # Gyro ratchet binds to a PHYSICAL button (e.g. a grip paddle), so it
+            # works even when that button isn't mapped to any output.
+            if hold and not self.physical.get(hold):
                 return
         data = self._read_gyro()
         if data is None:
@@ -202,10 +215,13 @@ class SDL3Input:
         s.lt = max(0.0, axis(sdl3.SDL_GAMEPAD_AXIS_LEFT_TRIGGER))
         s.rt = max(0.0, axis(sdl3.SDL_GAMEPAD_AXIS_RIGHT_TRIGGER))
 
-        for name, sdl_btn in self.btn_map.items():
-            s.buttons[name] = bool(
+        # Read every physical button (incl. grip/paddles), then let the remap
+        # layer decide which physical button drives each output button.
+        for name, sdl_btn in self.phys_map.items():
+            self.physical[name] = bool(
                 sdl3.SDL_GetGamepadButton(self.gp, sdl_btn)
             )
+        s.buttons = apply_remap(self.physical, self.remap)
 
         self._apply_gyro(s)
         self._last_poll = time.perf_counter()
