@@ -4,7 +4,7 @@
 
 <h1 align="center">SC2Xbox — Steam Controller Bridge</h1>
 
-Use the **2025 Steam Controller** in apps that only accept standard gamepads —
+Use the **2026 Steam Controller** in apps that only accept standard gamepads —
 **Xbox PC app / PC Game Pass** (Forza, etc.), Epic, GOG, EA, Ubisoft, emulators,
 anything that speaks XInput or DualShock 4.
 
